@@ -1,0 +1,65 @@
+{
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "editor.rulers": [80], // 라인 길이를 80자로 제한
+    "editor.wordWrap": "on", // 긴 줄을 자동으로 감춤
+    "files.eol": "\n", // 줄 바꿈을 LF로 설정 (Unix 스타일)
+    "files.trimTrailingWhitespace": true, // 저장 시 불필요한 공백 제거
+    "files.autoSave": "onWindowChange", // 윈도우 변경 시 자동 저장
+    "files.autoSaveDelay": 1000, // 자동 저장 지연 시간 (ms)
+    // "dart.flutterSdkPath": "/path/to/flutter", // Flutter SDK 경로 설정
+    // "dart.sdkPath": "/path/to/dart-sdk", // Dart SDK 경로 설정
+    "dart.enableSdkFormatter": true, // Dart SDK 코드 포매팅 활성화
+    "dart.lineLength": 80, // 코드 라인 길이 제한
+    "dart.flutterHotReloadOnSave": true, // 저장 시 핫 리로드 활성화
+    "dart.updateImportsOnSave": true, // 저장 시 import 자동 업데이트
+    "dart.showLintWarnings": true, // Lint 경고 표시
+    "dart.previewLsp": true, // LSP (Language Server Protocol) 사용
+    "dart.debugExternalLibraries": true, // 외부 라이브러리 디버깅 활성화
+    "dart.analyzer.exclude": [
+      "**/test/**", // 분석에서 테스트 디렉토리 제외
+      "**/build/**"  // 빌드 아티팩트 디렉토리 제외
+    ],
+    "editor.defaultFormatter": "Dart-Code.dart-code", // Dart 파일 포매터 설정
+    "editor.codeLens": true, // 코드 렌즈 활성화 (예: 함수 정의, 호출 정보 등)
+    "editor.quickSuggestions": {
+      "strings": true,
+      "comments": true
+    },
+    "editor.suggestOnTriggerCharacters": true, // 자동 완성 기능 활성화
+    "editor.snippetSuggestions": "top", // 스니펫 제안 우선순위 설정
+    "git.autofetch": true, // Git 자동 가져오기 활성화
+    "git.enableSmartCommit": true, // 스마트 커밋 활성화
+    "git.confirmSync": false, // Git 동기화 확인 생략
+    "window.zoomLevel": 0, // 기본 줌 레벨 설정 (기본 0)
+    "extensions.ignoreRecommendations": false, // 추천 확장 프로그램을 무시하지 않음
+    "dart.debugSdkLibraries": false, // SDK 라이브러리 디버깅 비활성화 (성능 향상)
+    "dart.experimentalLintOnSave": true, // 실험적인 lint 기능 활성화
+    "editor.formatOnPaste": true, // 붙여넣기 시 포매팅 적용
+    "editor.formatOnType": true, // 타이핑 시 포매팅 적용
+    "editor.autoClosingBrackets": "always", // 괄호 자동 완성
+    "editor.autoClosingQuotes": "always", // 따옴표 자동 완성
+    "editor.autoIndent": "full", // 자동 들여쓰기 활성화
+    "editor.cursorBlinking": "smooth", // 커서 블링킹 설정
+    "editor.cursorStyle": "line", // 커서 스타일을 선으로 설정
+    "editor.renderWhitespace": "boundary", // 공백을 표시
+    "editor.minimap.enabled": false, // 미니맵 비활성화 (옵션)
+    "editor.showFoldingControls": "always", // 접기/펼치기 컨트롤 항상 표시
+    "editor.formatOnSaveMode": "file", // 파일 저장 시만 포매팅 적용
+    "dart.analysisExcludedFolders": [
+      "**/node_modules", // node_modules 제외
+      "**/.pub-cache" // pub 캐시 폴더 제외
+    ],
+    "files.exclude": {
+      "**/.git": true, // .git 폴더 숨기기
+      "**/.vscode": true, // .vscode 폴더 숨기기
+      "**/build": true, // 빌드 폴더 숨기기
+      "**/.pub-cache": true, // pub 캐시 폴더 숨기기
+      "**/.dart_tool": true // .dart_tool 폴더 숨기기
+    },
+    "search.exclude": {
+      "**/node_modules": true, // 검색에서 node_modules 제외
+      "**/.pub-cache": true // 검색에서 pub 캐시 제외
+    }
+  }
