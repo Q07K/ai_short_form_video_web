@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
+import 'dart:convert';
+
+import 'right_panel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,216 +17,143 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Test Widgets')),
-        body: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: const TestWidgetList(),
-          ),
-        ),
+        appBar: AppBar(title: const Text('AI Short from Video')),
+        body: const VideoEditorScreen(),
       ),
     );
   }
 }
 
-class TestWidgetList extends StatefulWidget {
-  const TestWidgetList({super.key});
+class VideoEditorScreen extends StatelessWidget {
+  const VideoEditorScreen({super.key});
 
   @override
-  _TestWidgetListState createState() => _TestWidgetListState();
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 1,
+          child: Container(
+            color: Colors.grey[200],
+            child: const LeftPanel(),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Container(
+            color: Colors.grey[100],
+            child: const RightPanel(), // RightPanel 위젯 사용
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _TestWidgetListState extends State<TestWidgetList> {
-  List<TextEditingController> testWidgetControllers = [TextEditingController()];
+class LeftPanel extends StatefulWidget {
+  const LeftPanel({super.key});
 
-  void addTestWidgetAt(int index) {
-    //위젯들 밑의 버튼들
-    setState(() {
-      testWidgetControllers.insert(index + 1, TextEditingController());
-    });
-  }
+  @override
+  _LeftPanelState createState() => _LeftPanelState();
+}
 
-  void addTestWidget() {
-    // 맨 밑에 버튼 담당
-    setState(() {
-      testWidgetControllers.add(TextEditingController());
-    });
-  }
-
-  void deleteThisWidget(int index) {
-    //쓰레기통 아이콘
-    setState(() {
-      if (testWidgetControllers.length > 1) {
-        testWidgetControllers.removeAt(index);
-      }
-    });
-  }
-
-  /// 현재 마우스 위치 인덱스 (기본값 -1)
-  int _hoveredButtonIndex = -1;
-
+class _LeftPanelState extends State<LeftPanel> {
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles:
-                  false, //이거 true로 설정하면, 드래그 가능 리스트들 목록들 각각 오른쪽 화면에 웹에서만 보이는 전용 드래그 나옵니다.
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (newIndex.isOdd) {
-                    // 버튼 사이로 드래그된 경우의 처리
-
-                    newIndex = (newIndex + 1) ~/ 2;
-                  } else {
-                    newIndex ~/= 2;
-                  }
-                  oldIndex ~/= 2;
-
-                  if (newIndex < oldIndex) {
-                    // 위젯이 자신의 다음 위젯보다 위로 이동했을 때만 순서 변경
-                    final item = testWidgetControllers.removeAt(oldIndex);
-                    testWidgetControllers.insert(newIndex, item);
-                  } else if (newIndex > oldIndex + 1) {
-                    final item = testWidgetControllers.removeAt(oldIndex);
-                    testWidgetControllers.insert(newIndex - 1, item);
-                  }
-                });
-              },
-              itemCount: testWidgetControllers.length * 2,
-              itemBuilder: (context, index) {
-                if (index.isEven) {
-                  final widgetIndex = index ~/ 2;
-                  return TestWidget(
-                    key: ValueKey('TestWidget-$widgetIndex'),
-                    textController: testWidgetControllers[widgetIndex],
-                    listIndex: widgetIndex,
-                    onDelete: () => deleteThisWidget(widgetIndex),
-                  );
-                } else {
-                  final buttonIndex = index ~/ 2;
-                  return AddBelowWidgetButton(
-                    key: ValueKey('Button-$buttonIndex'),
-                    buttonIndex: buttonIndex,
-                    addTestWidgetAt: addTestWidgetAt,
-                    hoveredButtonIndex: _hoveredButtonIndex,
-                    onHover: (hovering) {
-                      setState(() {
-                        _hoveredButtonIndex = hovering ? buttonIndex : -1;
-                      });
-                    },
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: addTestWidget,
-              child: const Text('Add'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class TestWidget extends StatelessWidget {
-  final TextEditingController textController; //위젯 순서 변경 시, 내용물 보존
-  final int listIndex; //위젯들의 번호 1번, 2번 .....
-  final VoidCallback onDelete;
-
-  const TestWidget({
-    super.key,
-    required this.textController,
-    required this.listIndex,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey),
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    ReorderableDragStartListener(
-                      index: listIndex *
-                          2, //index를 곱해서 번호대로 index가 1이면 1번 testwidget, 2번이면 1번 testwidget 바로 밑의 버튼
-                      child: const Icon(Icons.list, size: 24),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      '${listIndex + 1}',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.black),
-                  onPressed: onDelete,
-                ),
-              ],
-            ),
-            TextField(
-              controller: textController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[400]!),
+                borderRadius: BorderRadius.circular(8.0),
               ),
+              child: const Center(child: Placeholder()),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[400]!),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: const ImageGallery(),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class AddBelowWidgetButton extends StatelessWidget {
-  final int buttonIndex;
-  final void Function(int) addTestWidgetAt;
-  final int hoveredButtonIndex;
-  final void Function(bool) onHover;
+class ImageGallery extends StatefulWidget {
+  const ImageGallery({super.key});
 
-  const AddBelowWidgetButton({
-    super.key,
-    required this.buttonIndex,
-    required this.addTestWidgetAt,
-    required this.hoveredButtonIndex,
-    required this.onHover,
-  });
+  @override
+  _ImageGalleryState createState() => _ImageGalleryState();
+}
+
+class _ImageGalleryState extends State<ImageGallery> {
+  List<String> _imagePaths = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAssetImages();
+  }
+
+  Future<void> _loadAssetImages() async {
+    final manifestContent = await rootBundle.loadString('AssetManifest.json');
+    final Map<String, dynamic> manifestMap = await json.decode(manifestContent);
+
+    setState(() {
+      _imagePaths = manifestMap.keys
+          .where((String key) => key.startsWith('assets/images/'))
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: MouseRegion(
-        onEnter: (_) => onHover(true),
-        onExit: (_) => onHover(false),
-        child: Opacity(
-          opacity: hoveredButtonIndex == buttonIndex
-              ? 1.0
-              : 0.5, // 오른쪽 숫자를 0.0으로 하면 화면상에 보이지 않음, 순서 변경 제대로 되나 확인 위해 반투명으로 설정함
-          child: ElevatedButton(
-            onPressed: () => addTestWidgetAt(buttonIndex),
-            child: Text('Add below widget ${buttonIndex + 1}'),
-          ),
-        ),
+    return Container(
+      height: 250,
+      child: Scrollable(
+        viewportBuilder: (BuildContext context, ViewportOffset position) {
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.all(10.0),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              crossAxisSpacing: 8.0,
+              mainAxisSpacing: 8.0,
+              mainAxisExtent: 110,
+            ),
+            itemCount: _imagePaths.length,
+            itemBuilder: (context, index) {
+              return Draggable(
+                data: _imagePaths[index],
+                feedback: Image.asset(
+                  _imagePaths[index],
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+                child: Image.asset(
+                  _imagePaths[index],
+                  fit: BoxFit.contain,
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
