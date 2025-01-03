@@ -1,5 +1,6 @@
 // resizablewidget.dart
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 
 class ResizebleWidget extends StatefulWidget {
   ResizebleWidget({this.imagePath, this.initialTop, this.initialLeft, Key? key}) : super(key: key);
@@ -15,8 +16,8 @@ class ResizebleWidget extends StatefulWidget {
 const ballDiameter = 20.0; // 핸들 크기를 키워서 터치 영역 확보
 
 class _ResizebleWidgetState extends State<ResizebleWidget> {
-  double height = 100;
-  double width = 100;
+  double width = 100; // 고정 너비
+  double height = 100; // 초기 높이
   bool _showHandlers = false;
   final double _handlerPadding = 20.0; // 핸들러와 이미지 사이 간격
 
@@ -31,6 +32,21 @@ class _ResizebleWidgetState extends State<ResizebleWidget> {
     super.initState();
     top = widget.initialTop ?? 0;
     left = widget.initialLeft ?? 0;
+    _loadImageDimensions();
+  }
+
+  Future<void> _loadImageDimensions() async {
+    if (widget.imagePath != null) {
+      final image = AssetImage(widget.imagePath!);
+      final ImageStream stream = image.resolve(ImageConfiguration.empty);
+      stream.addListener(
+        ImageStreamListener((ImageInfo imageInfo, bool synchronousCall) {
+          setState(() {
+            height = width * imageInfo.image.height / imageInfo.image.width;
+          });
+        }),
+      );
+    }
   }
 
   _handleImageDragStart(details) {
@@ -280,7 +296,6 @@ class _ManipulatingBallState extends State<ManipulatingBall> {
           shape: BoxShape.rectangle,
           border: Border.all(color: Colors.grey.shade300, width: 0.5),
         ),
-
       ),
     );
   }
