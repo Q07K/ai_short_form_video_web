@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class RightPanel extends StatefulWidget {
   const RightPanel({super.key});

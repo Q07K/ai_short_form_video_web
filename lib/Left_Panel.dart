@@ -1,9 +1,11 @@
-// leftpanel.dart
+// Left_panel.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'resizablewidget.dart'; // ResizableWidget 임포트
+import 'dart:math';
+import 'dart:ui' as ui;
+import 'Editable_Image.dart'; // Import the new file
 
 class LeftPanel extends StatefulWidget {
   const LeftPanel({super.key});
@@ -26,7 +28,10 @@ class _LeftPanelState extends State<LeftPanel> {
                 border: Border.all(color: Colors.grey[400]!),
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              child: const CustomBoard(),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: const CustomBoard(),
+              ),
             ),
           ),
           const SizedBox(
@@ -48,52 +53,6 @@ class _LeftPanelState extends State<LeftPanel> {
   }
 }
 
-class CustomBoard extends StatefulWidget {
-  const CustomBoard({super.key});
-
-  @override
-  _CustomBoardState createState() => _CustomBoardState();
-}
-
-class _CustomBoardState extends State<CustomBoard> {
-  final List<Widget> _placedWidgets = []; // PlacedImage 대신 ResizableWidget 사용
-
-  void _addImage(String imagePath, Offset position) {
-    setState(() {
-      _placedWidgets.add(
-        ResizebleWidget(
-          imagePath: imagePath,
-          initialTop: position.dy,
-          initialLeft: position.dx,
-          key: UniqueKey(), // 각 위젯에 고유 키 제공
-        ),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DragTarget<String>(
-      onAcceptWithDetails: (details) {
-        final RenderBox renderBox = context.findRenderObject() as RenderBox;
-        final Offset localPosition = renderBox.globalToLocal(details.offset);
-        _addImage(details.data, localPosition);
-      },
-      builder: (context, candidateData, rejectedData) {
-        return Stack(
-          children: [
-            if (_placedWidgets.isEmpty)
-              const Center(
-                child: Placeholder(),
-              ),
-            ..._placedWidgets.map((widget) => widget).toList(),
-          ],
-        );
-      },
-    );
-  }
-}
-
 class ImageGallery extends StatefulWidget {
   const ImageGallery({super.key});
 
@@ -103,6 +62,7 @@ class ImageGallery extends StatefulWidget {
 
 class _ImageGalleryState extends State<ImageGallery> {
   List<String> _imagePaths = [];
+  final Map<String, Size> _imageSizes = {};
 
   @override
   void initState() {
@@ -112,12 +72,28 @@ class _ImageGalleryState extends State<ImageGallery> {
 
   Future<void> _loadAssetImages() async {
     final manifestContent = await rootBundle.loadString('AssetManifest.json');
-    final Map<String, dynamic> manifestMap = await json.decode(manifestContent);
+    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+
+    final imagePaths = manifestMap.keys
+        .where((String key) => key.startsWith('assets/images/'))
+        .toList();
+
+    for (final path in imagePaths) {
+      final image = Image.asset(path);
+      final Completer<ui.Image> completer = Completer<ui.Image>();
+      image.image.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener(
+          (ImageInfo info, bool _) {
+            completer.complete(info.image);
+          },
+        ),
+      );
+      final uiImage = await completer.future;
+      _imageSizes[path] = Size(uiImage.width.toDouble(), uiImage.height.toDouble());
+    }
 
     setState(() {
-      _imagePaths = manifestMap.keys
-          .where((String key) => key.startsWith('assets/images/'))
-          .toList();
+      _imagePaths = imagePaths;
     });
   }
 
@@ -137,16 +113,20 @@ class _ImageGalleryState extends State<ImageGallery> {
         ),
         itemCount: _imagePaths.length,
         itemBuilder: (context, index) {
+          final imagePath = _imagePaths[index];
+          final originalSize = _imageSizes[imagePath] ?? const Size(1, 1); // Provide a default size
+          final feedbackHeight = 100 * (originalSize.height / originalSize.width);
+
           return Draggable(
-            data: _imagePaths[index],
+            data: imagePath,
             feedback: Image.asset(
-              _imagePaths[index],
+              imagePath,
               width: 100,
-              height: 100,
+              height: feedbackHeight,
               fit: BoxFit.contain,
             ),
             child: Image.asset(
-              _imagePaths[index],
+              imagePath,
               fit: BoxFit.contain,
             ),
           );
