@@ -1,4 +1,3 @@
-// Editable_image.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
@@ -25,6 +24,15 @@ class _CustomBoardState extends State<CustomBoard> {
 
   // Minimum image size
   final double _minImageSize = 50.0;
+
+  // Global position of the mouse cursor
+  Offset _mousePosition = Offset.zero;
+  // Local position of the mouse cursor
+  Offset _localMousePosition = Offset.zero;
+
+  // Store initial width and height when resizing starts
+  double? _initialWidth;
+  double? _initialHeight;
 
   void _addImage(String imagePath, Offset position) {
     final Image image = Image.asset(imagePath);
@@ -114,66 +122,161 @@ class _CustomBoardState extends State<CustomBoard> {
       _selectedImageIndex = index;
       _showHandlers = true;
       _resizingHandleType = type;
+
+      // Store initial width and height
+      _initialWidth = _placedImages[index].width;
+      _initialHeight = _placedImages[index].height;
     });
   }
 
   void _handleResizeUpdate(int index, DragUpdateDetails details, String type) {
     if (_selectedImageIndex == index) {
+      final RenderBox renderBox = context.findRenderObject() as RenderBox;
+      final Offset localPosition = renderBox.globalToLocal(details.globalPosition);
+      final PlacedImage image = _placedImages[index];
+
+      // Convert local position to image's local coordinate system
+      Offset imageLocalPosition = localPosition - image.position;
+
+      // Rotate local position back to the original, unrotated coordinate system
+      Offset rotatedImageLocalPosition = rotatePoint(
+        imageLocalPosition,
+        Offset(image.width / 2, image.height / 2),
+        -image.rotationAngle,
+      );
+
+      // Get the fixed opposite point in the unrotated coordinate system
+      Offset fixedPoint = getFixedOppositePointBasedOnType(type);
+
+      // Calculate new dimensions based on the rotated local position and fixed point
+      double newWidth = image.width;
+      double newHeight = image.height;
+      Offset newPosition = image.position;
+
+      switch (type) {
+        case 'topLeft':
+          newWidth = (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx).abs();
+          newHeight = (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy).abs();
+          newPosition = Offset(
+            image.position.dx + (image.width - newWidth),
+            image.position.dy + (image.height - newHeight),
+          );
+          break;
+
+        case 'topCenter':
+          newHeight = (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy).abs();
+          newPosition = Offset(
+            image.position.dx,
+            image.position.dy + (image.height - newHeight),
+          );
+          break;
+
+        case 'topRight':
+          newWidth = rotatedImageLocalPosition.dx;
+          newHeight = (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy).abs();
+          newPosition = Offset(
+            image.position.dx,
+            image.position.dy + (image.height - newHeight),
+          );
+          break;
+
+        case 'centerLeft':
+          newWidth = (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx).abs();
+          newPosition = Offset(
+            image.position.dx + (image.width - newWidth),
+            image.position.dy,
+          );
+          break;
+
+        case 'centerRight':
+          newWidth = rotatedImageLocalPosition.dx;
+          break;
+
+        case 'bottomRight':
+          newWidth = rotatedImageLocalPosition.dx;
+          newHeight = rotatedImageLocalPosition.dy;
+          break;
+
+        case 'bottomCenter':
+          newHeight = rotatedImageLocalPosition.dy;
+          break;
+
+        case 'bottomLeft':
+          newWidth = (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx).abs();
+          newHeight = rotatedImageLocalPosition.dy;
+          newPosition = Offset(
+            image.position.dx + (image.width - newWidth),
+            image.position.dy,
+          );
+          break;
+      }
+
+      // Ensure minimum size for the resizing direction
+      if (newWidth < _minImageSize && (type == 'topLeft' || type == 'centerLeft' || type == 'bottomLeft' || type == 'topRight' || type == 'centerRight' || type == 'bottomRight')) {
+        newWidth = _minImageSize;
+      }
+      if (newHeight < _minImageSize && (type == 'topLeft' || type == 'topCenter' || type == 'topRight' || type == 'bottomRight' || type == 'bottomCenter' || type == 'bottomLeft')) {
+        newHeight = _minImageSize;
+      }
+
+      // Calculate the fixed point's global position after rotation
+      Offset rotatedFixedPoint = rotatePoint(
+        Offset(fixedPoint.dx * image.width, fixedPoint.dy * image.height),
+        Offset(image.width / 2, image.height / 2),
+        image.rotationAngle,
+      );
+      Offset fixedPointGlobal = image.position + rotatedFixedPoint;
+
+      // Update image properties
       setState(() {
-        PlacedImage image = _placedImages[index];
-        double newWidth = image.width;
-        double newHeight = image.height;
-        Offset newPosition = image.position;
-        double deltaX = details.delta.dx;
-        double deltaY = details.delta.dy;
-
-        switch (type) {
-          case 'topLeft':
-            newWidth -= deltaX;
-            newHeight -= deltaY;
-            newPosition = Offset(image.position.dx + deltaX, image.position.dy + deltaY);
-            break;
-          case 'topCenter':
-            newHeight -= deltaY;
-            newPosition = Offset(image.position.dx, image.position.dy + deltaY);
-            break;
-          case 'topRight':
-            newWidth += deltaX;
-            newHeight -= deltaY;
-            newPosition = Offset(image.position.dx, image.position.dy+deltaY);
-            break;
-          case 'centerLeft':
-             newWidth -= deltaX;
-            newPosition = Offset(image.position.dx + deltaX, image.position.dy);
-            break;
-          case 'centerRight':
-            newWidth += deltaX;
-            break;
-          case 'bottomRight':
-            newWidth += deltaX;
-            newHeight += deltaY;
-            break;
-          case 'bottomCenter':
-            newHeight += deltaY;
-           break;
-          case 'bottomLeft':
-            newWidth -= deltaX;
-            newHeight += deltaY;
-            newPosition = Offset(image.position.dx + deltaX, image.position.dy);
-            break;
-        }
-
-        if (newWidth > _minImageSize && newHeight > _minImageSize) {
-          image.width = newWidth;
-          image.height = newHeight;
-          image.position = newPosition;
-        }
+        image.width = newWidth;
+        image.height = newHeight;
+        image.position = newPosition;
       });
+
+      // Adjust position to keep the fixed point at its original global position
+      Offset newRotatedFixedPoint = rotatePoint(
+        Offset(fixedPoint.dx * newWidth, fixedPoint.dy * newHeight),
+        Offset(newWidth / 2, newHeight / 2),
+        image.rotationAngle,
+      );
+      Offset newFixedPointGlobal = newPosition + newRotatedFixedPoint;
+      Offset adjustment = fixedPointGlobal - newFixedPointGlobal;
+
+      setState(() {
+        image.position += adjustment;
+      });
+    }
+  }
+
+  // Helper function to get the fixed opposite point based on the handle type
+  Offset getFixedOppositePointBasedOnType(String type) {
+    switch (type) {
+      case 'topLeft':
+        return const Offset(1, 1); // Opposite of top-left is bottom-right
+      case 'topCenter':
+        return const Offset(0.5, 1); // Opposite of top-center is bottom-center
+      case 'topRight':
+        return const Offset(0, 1); // Opposite of top-right is bottom-left
+      case 'centerLeft':
+        return const Offset(1, 0.5); // Opposite of center-left is center-right
+      case 'centerRight':
+        return const Offset(0, 0.5); // Opposite of center-right is center-left
+      case 'bottomRight':
+        return const Offset(0, 0); // Opposite of bottom-right is top-left
+      case 'bottomCenter':
+        return const Offset(0.5, 0); // Opposite of bottom-center is top-center
+      case 'bottomLeft':
+        return const Offset(1, 0); // Opposite of bottom-left is top-right
+      default:
+        return Offset.zero;
     }
   }
 
   void _handleResizeEnd(int index, DragEndDetails details) {
     _resizingHandleType = null;
+    _initialWidth = null;
+    _initialHeight = null;
   }
 
   void _resetImageSize(int index) {
@@ -199,77 +302,116 @@ class _CustomBoardState extends State<CustomBoard> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
+    return MouseRegion(
+      onHover: (event) {
+        final RenderBox renderBox = context.findRenderObject() as RenderBox;
+        final Offset localPosition = renderBox.globalToLocal(event.position);
         setState(() {
-          _selectedImageIndex = null;
-          _showHandlers = false;
+          _mousePosition = event.position;
+          if (_selectedImageIndex != null) {
+            PlacedImage image = _placedImages[_selectedImageIndex!];
+            // Convert local position to image's local coordinate system
+            Offset imageLocalPosition = localPosition - image.position;
+            // Rotate point back to the original, unrotated coordinate system for accurate calculations
+            _localMousePosition = rotatePoint(imageLocalPosition, Offset(image.width / 2, image.height / 2), -image.rotationAngle);
+          }
         });
       },
-      behavior: HitTestBehavior.opaque,
-      child: DragTarget<String>(
-        onAcceptWithDetails: (details) {
-          final RenderBox renderBox = context.findRenderObject() as RenderBox;
-          final Offset localPosition =
-              renderBox.globalToLocal(details.offset);
-          _addImage(details.data, localPosition);
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedImageIndex = null;
+            _showHandlers = false;
+          });
         },
-        builder: (context, candidateData, rejectedData) {
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              if (_placedImages.isEmpty)
-                const Center(
-                  child: Placeholder(),
-                ),
-              ..._placedImages.asMap().entries.map((entry) {
-                final index = entry.key;
-                final placedImage = entry.value;
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          children: [
+            DragTarget<String>(
+              onAcceptWithDetails: (details) {
+                final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                final Offset localPosition =
+                    renderBox.globalToLocal(details.offset);
+                _addImage(details.data, localPosition);
+              },
+              builder: (context, candidateData, rejectedData) {
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    if (_placedImages.isEmpty)
+                      const Center(
+                        child: Placeholder(),
+                      ),
+                    ..._placedImages.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final placedImage = entry.value;
 
-                return Positioned(
-                  left: placedImage.position.dx,
-                  top: placedImage.position.dy,
-                  child: GestureDetector(
-                    onTap: () => _selectImage(index),
-                    onPanStart: (details) => _startDragging(index, details.globalPosition),
-                    onPanUpdate: (details) {
-                      if (_draggingIndex == index) {
-                        final RenderBox renderBox =
-                            context.findRenderObject() as RenderBox;
-                        final Offset localPosition =
-                            renderBox.globalToLocal(details.globalPosition);
-                        _updateImagePosition(index, localPosition);
-                      }
-                    },
-                    onPanEnd: (_) => _stopDragging(),
-                    child: Transform.rotate(
-                      angle: placedImage.rotationAngle,
-                      child: SizedBox(
-                        width: placedImage.width,
-                        height: placedImage.height,
-                        child: Padding(
-                          padding: EdgeInsets.zero,
-                          child: SizedBox(
-                            child: Image.asset(
-                              placedImage.imagePath,
-                              fit: BoxFit.fill,
+                      return Positioned(
+                        left: placedImage.position.dx,
+                        top: placedImage.position.dy,
+                        child: GestureDetector(
+                          onTap: () => _selectImage(index),
+                          onPanStart: (details) => _startDragging(index, details.globalPosition),
+                          onPanUpdate: (details) {
+                            if (_draggingIndex == index) {
+                              final RenderBox renderBox =
+                                  context.findRenderObject() as RenderBox;
+                              final Offset localPosition =
+                                  renderBox.globalToLocal(details.globalPosition);
+                              _updateImagePosition(index, localPosition);
+                            }
+                          },
+                          onPanEnd: (_) => _stopDragging(),
+                          child: Transform.rotate(
+                            angle: placedImage.rotationAngle,
+                            child: SizedBox(
+                              width: placedImage.width,
+                              height: placedImage.height,
+                              child: Padding(
+                                padding: EdgeInsets.zero,
+                                child: SizedBox(
+                                  child: Image.asset(
+                                    placedImage.imagePath,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
+                      );
+                    }),
+                    if (_selectedImageIndex != null && _showHandlers)
+                      _buildImageHandlers(_placedImages[_selectedImageIndex!]),
+                    if (_selectedImageIndex != null && _showHandlers)
+                      _buildControlButtons(_placedImages[_selectedImageIndex!], _selectedImageIndex!),
+                    if (_selectedImageIndex != null && _showHandlers)
+                      _buildRotationIcon(_placedImages[_selectedImageIndex!]),
+                  ],
                 );
-              }),
-              if (_selectedImageIndex != null && _showHandlers)
-                _buildImageHandlers(_placedImages[_selectedImageIndex!]),
-              if (_selectedImageIndex != null && _showHandlers)
-                _buildControlButtons(_placedImages[_selectedImageIndex!], _selectedImageIndex!),
-              if (_selectedImageIndex != null && _showHandlers)
-                _buildRotationIcon(_placedImages[_selectedImageIndex!]),
-            ],
-          );
-        },
+              },
+            ),
+            // Display mouse positions
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Global: ${_mousePosition.dx.toStringAsFixed(0)}, ${_mousePosition.dy.toStringAsFixed(0)}',
+                    style: TextStyle(color: Colors.black, backgroundColor: Colors.white),
+                  ),
+                  if (_selectedImageIndex != null)
+                    Text(
+                      'Local: ${_localMousePosition.dx.toStringAsFixed(0)}, ${_localMousePosition.dy.toStringAsFixed(0)}',
+                      style: TextStyle(color: Colors.black, backgroundColor: Colors.white),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -449,4 +591,13 @@ class PlacedImage {
     required this.originalWidth,
     required this.originalHeight,
   });
+}
+
+// Helper function to rotate a point around a center
+Offset rotatePoint(Offset point, Offset center, double angle) {
+  final double translateX = point.dx - center.dx;
+  final double translateY = point.dy - center.dy;
+  final double rotatedX = translateX * cos(angle) - translateY * sin(angle);
+  final double rotatedY = translateX * sin(angle) + translateY * cos(angle);
+  return Offset(center.dx + rotatedX, center.dy + rotatedY);
 }
