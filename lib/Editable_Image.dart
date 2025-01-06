@@ -30,10 +30,6 @@ class _CustomBoardState extends State<CustomBoard> {
   // Local position of the mouse cursor
   Offset _localMousePosition = Offset.zero;
 
-  // Store initial width and height when resizing starts
-  double? _initialWidth;
-  double? _initialHeight;
-
   void _addImage(String imagePath, Offset position) {
     final Image image = Image.asset(imagePath);
     final Completer<ui.Image> completer = Completer<ui.Image>();
@@ -122,10 +118,6 @@ class _CustomBoardState extends State<CustomBoard> {
       _selectedImageIndex = index;
       _showHandlers = true;
       _resizingHandleType = type;
-
-      // Store initial width and height
-      _initialWidth = _placedImages[index].width;
-      _initialHeight = _placedImages[index].height;
     });
   }
 
@@ -147,6 +139,9 @@ class _CustomBoardState extends State<CustomBoard> {
 
       // Get the fixed opposite point in the unrotated coordinate system
       Offset fixedPoint = getFixedOppositePointBasedOnType(type);
+
+      // Limit the rotated local position to the opposite side of the fixed point
+      rotatedImageLocalPosition = _limitPositionToOppositeSide(rotatedImageLocalPosition, fixedPoint, image.width, image.height);
 
       // Calculate new dimensions based on the rotated local position and fixed point
       double newWidth = image.width;
@@ -249,6 +244,42 @@ class _CustomBoardState extends State<CustomBoard> {
     }
   }
 
+  // Helper function to limit the position to the opposite side of the fixed point
+  Offset _limitPositionToOppositeSide(Offset position, Offset fixedPoint, double width, double height) {
+    double x = position.dx;
+    double y = position.dy;
+
+    if (fixedPoint.dx == 0) {
+      // Left side fixed
+      if (x < 0) {
+        x = 0;
+      }
+    } else if (fixedPoint.dx == 1) {
+      // Right side fixed
+      if (x > width) {
+        x = width;
+      }
+    } else if (fixedPoint.dx == 0.5) {
+      // Center horizontally fixed, no limit needed
+    }
+
+    if (fixedPoint.dy == 0) {
+      // Top side fixed
+      if (y < 0) {
+        y = 0;
+      }
+    } else if (fixedPoint.dy == 1) {
+      // Bottom side fixed
+      if (y > height) {
+        y = height;
+      }
+    } else if (fixedPoint.dy == 0.5) {
+      // Center vertically fixed, no limit needed
+    }
+
+    return Offset(x, y);
+  }
+
   // Helper function to get the fixed opposite point based on the handle type
   Offset getFixedOppositePointBasedOnType(String type) {
     switch (type) {
@@ -275,8 +306,6 @@ class _CustomBoardState extends State<CustomBoard> {
 
   void _handleResizeEnd(int index, DragEndDetails details) {
     _resizingHandleType = null;
-    _initialWidth = null;
-    _initialHeight = null;
   }
 
   void _resetImageSize(int index) {
