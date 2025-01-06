@@ -378,21 +378,22 @@ class _CustomBoardState extends State<CustomBoard> {
                       return Positioned(
                         left: placedImage.position.dx,
                         top: placedImage.position.dy,
-                        child: GestureDetector(
-                          onTap: () => _selectImage(index),
-                          onPanStart: (details) => _startDragging(index, details.globalPosition),
-                          onPanUpdate: (details) {
-                            if (_draggingIndex == index) {
-                              final RenderBox renderBox =
-                                  context.findRenderObject() as RenderBox;
-                              final Offset localPosition =
-                                  renderBox.globalToLocal(details.globalPosition);
-                              _updateImagePosition(index, localPosition);
-                            }
-                          },
-                          onPanEnd: (_) => _stopDragging(),
-                          child: Transform.rotate(
-                            angle: placedImage.rotationAngle,
+                        // GestureDetector를 Transform.rotate로 감싸서 회전 적용
+                        child: Transform.rotate(
+                          angle: placedImage.rotationAngle,
+                          child: GestureDetector(
+                            onTap: () => _selectImage(index),
+                            onPanStart: (details) => _startDragging(index, details.globalPosition),
+                            onPanUpdate: (details) {
+                              if (_draggingIndex == index) {
+                                final RenderBox renderBox =
+                                    context.findRenderObject() as RenderBox;
+                                final Offset localPosition =
+                                    renderBox.globalToLocal(details.globalPosition);
+                                _updateImagePosition(index, localPosition);
+                              }
+                            },
+                            onPanEnd: (_) => _stopDragging(),
                             child: SizedBox(
                               width: placedImage.width,
                               height: placedImage.height,
