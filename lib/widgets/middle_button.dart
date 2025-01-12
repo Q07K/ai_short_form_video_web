@@ -19,6 +19,10 @@ class MiddleButton extends StatelessWidget {
       fixedSize: const Size(160, 60),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(
+          color: AppColors.black1,
+          width: 2,
+        ),
       ),
       backgroundColor: AppColors.white,
     );
