@@ -8,12 +8,36 @@ class HomeLogo extends StatelessWidget {
     return const SizedBox(
       width: 512,
       height: 512,
-      child: Text(
-        "AI",
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 412,
-        ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            child: Text(
+              "AI",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 412,
+                fontFamily: "Freesentation",
+                fontWeight: FontWeight.w800,
+              ),
+              overflow: TextOverflow.visible,
+            ),
+          ),
+          Positioned(
+            top: 450,
+            left: 65,
+            child: Text(
+              "Short from video",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 48,
+                fontFamily: "Freesentation",
+                fontWeight: FontWeight.w800,
+              ),
+              overflow: TextOverflow.visible,
+            ),
+          )
+        ],
       ),
     );
   }
