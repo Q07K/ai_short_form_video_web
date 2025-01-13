@@ -1,3 +1,4 @@
+// Editable_Image.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
@@ -8,10 +9,10 @@ class CustomBoard extends StatefulWidget {
   const CustomBoard({super.key});
 
   @override
-  _CustomBoardState createState() => _CustomBoardState();
+  CustomBoardState createState() => CustomBoardState();
 }
 
-class _CustomBoardState extends State<CustomBoard> {
+class CustomBoardState extends State<CustomBoard> {
   final List<PlacedImage> _placedImages = [];
   int? _draggingIndex;
   Offset _dragOffset = Offset.zero;
@@ -29,6 +30,20 @@ class _CustomBoardState extends State<CustomBoard> {
   Offset _mousePosition = Offset.zero;
   // Local position of the mouse cursor
   Offset _localMousePosition = Offset.zero;
+
+  String _customBoardText = ''; // CustomBoard에 표시할 텍스트
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  // 텍스트 업데이트 함수
+  void updateText(String text) {
+    setState(() {
+      _customBoardText = text;
+    });
+  }
 
   void _addImage(String imagePath, Offset position) {
     final Image image = Image.asset(imagePath);
@@ -96,20 +111,24 @@ class _CustomBoardState extends State<CustomBoard> {
     });
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-    _rotationCenter = _placedImages[index].position + Offset(_placedImages[index].width / 2, _placedImages[index].height / 2);
-    _startRotationAngle = atan2(localPosition.dy - _rotationCenter!.dy, localPosition.dx - _rotationCenter!.dx);
+    _rotationCenter = _placedImages[index].position +
+        Offset(_placedImages[index].width / 2,
+            _placedImages[index].height / 2);
+    _startRotationAngle = atan2(localPosition.dy - _rotationCenter!.dy,
+        localPosition.dx - _rotationCenter!.dx);
   }
 
   void _updateRotation(int index, DragUpdateDetails details) {
     if (_rotationCenter != null) {
       final RenderBox renderBox = context.findRenderObject() as RenderBox;
       final Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-      final currentRotationAngle = atan2(localPosition.dy - _rotationCenter!.dy, localPosition.dx - _rotationCenter!.dx);
+      final currentRotationAngle = atan2(localPosition.dy - _rotationCenter!.dy,
+          localPosition.dx - _rotationCenter!.dx);
       final angleDifference = currentRotationAngle - _startRotationAngle!;
-        setState(() {
-          _placedImages[index].rotationAngle += angleDifference;
-            _startRotationAngle = currentRotationAngle;
-        });
+      setState(() {
+        _placedImages[index].rotationAngle += angleDifference;
+        _startRotationAngle = currentRotationAngle;
+      });
     }
   }
 
@@ -141,7 +160,11 @@ class _CustomBoardState extends State<CustomBoard> {
       Offset fixedPoint = getFixedOppositePointBasedOnType(type);
 
       // Limit the rotated local position to the opposite side of the fixed point
-      rotatedImageLocalPosition = _limitPositionToOppositeSide(rotatedImageLocalPosition, fixedPoint, image.width, image.height);
+      rotatedImageLocalPosition = _limitPositionToOppositeSide(
+          rotatedImageLocalPosition,
+          fixedPoint,
+          image.width,
+          image.height);
 
       // Calculate new dimensions based on the rotated local position and fixed point
       double newWidth = image.width;
@@ -150,8 +173,12 @@ class _CustomBoardState extends State<CustomBoard> {
 
       switch (type) {
         case 'topLeft':
-          newWidth = (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx).abs();
-          newHeight = (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy).abs();
+          newWidth =
+              (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx)
+                  .abs();
+          newHeight =
+              (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy)
+                  .abs();
           newPosition = Offset(
             image.position.dx + (image.width - newWidth),
             image.position.dy + (image.height - newHeight),
@@ -159,7 +186,9 @@ class _CustomBoardState extends State<CustomBoard> {
           break;
 
         case 'topCenter':
-          newHeight = (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy).abs();
+          newHeight =
+              (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy)
+                  .abs();
           newPosition = Offset(
             image.position.dx,
             image.position.dy + (image.height - newHeight),
@@ -168,7 +197,9 @@ class _CustomBoardState extends State<CustomBoard> {
 
         case 'topRight':
           newWidth = rotatedImageLocalPosition.dx;
-          newHeight = (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy).abs();
+          newHeight =
+              (rotatedImageLocalPosition.dy - image.height * fixedPoint.dy)
+                  .abs();
           newPosition = Offset(
             image.position.dx,
             image.position.dy + (image.height - newHeight),
@@ -176,7 +207,9 @@ class _CustomBoardState extends State<CustomBoard> {
           break;
 
         case 'centerLeft':
-          newWidth = (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx).abs();
+          newWidth =
+              (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx)
+                  .abs();
           newPosition = Offset(
             image.position.dx + (image.width - newWidth),
             image.position.dy,
@@ -197,7 +230,9 @@ class _CustomBoardState extends State<CustomBoard> {
           break;
 
         case 'bottomLeft':
-          newWidth = (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx).abs();
+          newWidth =
+              (rotatedImageLocalPosition.dx - image.width * fixedPoint.dx)
+                  .abs();
           newHeight = rotatedImageLocalPosition.dy;
           newPosition = Offset(
             image.position.dx + (image.width - newWidth),
@@ -207,10 +242,22 @@ class _CustomBoardState extends State<CustomBoard> {
       }
 
       // Ensure minimum size for the resizing direction
-      if (newWidth < _minImageSize && (type == 'topLeft' || type == 'centerLeft' || type == 'bottomLeft' || type == 'topRight' || type == 'centerRight' || type == 'bottomRight')) {
+      if (newWidth < _minImageSize &&
+          (type == 'topLeft' ||
+              type == 'centerLeft' ||
+              type == 'bottomLeft' ||
+              type == 'topRight' ||
+              type == 'centerRight' ||
+              type == 'bottomRight')) {
         newWidth = _minImageSize;
       }
-      if (newHeight < _minImageSize && (type == 'topLeft' || type == 'topCenter' || type == 'topRight' || type == 'bottomRight' || type == 'bottomCenter' || type == 'bottomLeft')) {
+      if (newHeight < _minImageSize &&
+          (type == 'topLeft' ||
+              type == 'topCenter' ||
+              type == 'topRight' ||
+              type == 'bottomRight' ||
+              type == 'bottomCenter' ||
+              type == 'bottomLeft')) {
         newHeight = _minImageSize;
       }
 
@@ -245,7 +292,8 @@ class _CustomBoardState extends State<CustomBoard> {
   }
 
   // Helper function to limit the position to the opposite side of the fixed point
-  Offset _limitPositionToOppositeSide(Offset position, Offset fixedPoint, double width, double height) {
+  Offset _limitPositionToOppositeSide(
+      Offset position, Offset fixedPoint, double width, double height) {
     double x = position.dx;
     double y = position.dy;
 
@@ -342,7 +390,10 @@ class _CustomBoardState extends State<CustomBoard> {
             // Convert local position to image's local coordinate system
             Offset imageLocalPosition = localPosition - image.position;
             // Rotate point back to the original, unrotated coordinate system for accurate calculations
-            _localMousePosition = rotatePoint(imageLocalPosition, Offset(image.width / 2, image.height / 2), -image.rotationAngle);
+            _localMousePosition = rotatePoint(
+                imageLocalPosition,
+                Offset(image.width / 2, image.height / 2),
+                -image.rotationAngle);
           }
         });
       },
@@ -358,7 +409,8 @@ class _CustomBoardState extends State<CustomBoard> {
           children: [
             DragTarget<String>(
               onAcceptWithDetails: (details) {
-                final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                final RenderBox renderBox =
+                    context.findRenderObject() as RenderBox;
                 final Offset localPosition =
                     renderBox.globalToLocal(details.offset);
                 _addImage(details.data, localPosition);
@@ -383,13 +435,15 @@ class _CustomBoardState extends State<CustomBoard> {
                           angle: placedImage.rotationAngle,
                           child: GestureDetector(
                             onTap: () => _selectImage(index),
-                            onPanStart: (details) => _startDragging(index, details.globalPosition),
+                            onPanStart: (details) =>
+                                _startDragging(index, details.globalPosition),
                             onPanUpdate: (details) {
                               if (_draggingIndex == index) {
                                 final RenderBox renderBox =
                                     context.findRenderObject() as RenderBox;
                                 final Offset localPosition =
-                                    renderBox.globalToLocal(details.globalPosition);
+                                    renderBox.globalToLocal(
+                                        details.globalPosition);
                                 _updateImagePosition(index, localPosition);
                               }
                             },
@@ -414,7 +468,9 @@ class _CustomBoardState extends State<CustomBoard> {
                     if (_selectedImageIndex != null && _showHandlers)
                       _buildImageHandlers(_placedImages[_selectedImageIndex!]),
                     if (_selectedImageIndex != null && _showHandlers)
-                      _buildControlButtons(_placedImages[_selectedImageIndex!], _selectedImageIndex!),
+                      _buildControlButtons(
+                          _placedImages[_selectedImageIndex!],
+                          _selectedImageIndex!),
                     if (_selectedImageIndex != null && _showHandlers)
                       _buildRotationIcon(_placedImages[_selectedImageIndex!]),
                   ],
@@ -430,13 +486,54 @@ class _CustomBoardState extends State<CustomBoard> {
                 children: [
                   Text(
                     'Global: ${_mousePosition.dx.toStringAsFixed(0)}, ${_mousePosition.dy.toStringAsFixed(0)}',
-                    style: TextStyle(color: Colors.black, backgroundColor: Colors.white),
+                    style: const TextStyle(
+                        color: Colors.black, backgroundColor: Colors.white),
                   ),
                   if (_selectedImageIndex != null)
                     Text(
                       'Local: ${_localMousePosition.dx.toStringAsFixed(0)}, ${_localMousePosition.dy.toStringAsFixed(0)}',
-                      style: TextStyle(color: Colors.black, backgroundColor: Colors.white),
+                      style: const TextStyle(
+                          color: Colors.black, backgroundColor: Colors.white),
                     ),
+                ],
+              ),
+            ),
+            // 텍스트 표시
+            Positioned(
+              bottom: 10,
+              left: 10,
+              right: 10,
+              child: IgnorePointer(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _customBoardText,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // IgnorePointer를 Stack 바깥으로 이동하고, 그 안에 Positioned 위젯을 배치
+            IgnorePointer(
+              child: Stack(
+                children: [
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    right: 10,
+                    child: Container(
+                      height: 0, // 높이를 0으로 설정하여 텍스트 표시에 영향을 주지 않음
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -446,7 +543,7 @@ class _CustomBoardState extends State<CustomBoard> {
     );
   }
 
-    Widget _buildControlButtons(PlacedImage image, int index) {
+  Widget _buildControlButtons(PlacedImage image, int index) {
     const buttonSize = 30.0;
     const offset = 10.0;
     const verticalOffset = 50.0; // 버튼 겹침 방지를 위한 추가 오프셋
@@ -458,7 +555,10 @@ class _CustomBoardState extends State<CustomBoard> {
     final rotationIconY = centerY + rotationIconRadius * sin(-pi / 2);
 
     return Positioned(
-      left: rotationIconX - buttonSize * 1.5 - offset+10, // Row를 사용하기 때문에 전체 너비를 고려하여 left 조정
+      left: rotationIconX -
+          buttonSize * 1.5 -
+          offset +
+          10, // Row를 사용하기 때문에 전체 너비를 고려하여 left 조정
       top: rotationIconY - buttonSize / 2 - verticalOffset,
       child: Row(
         mainAxisSize: MainAxisSize.min, // Row의 크기를 내용물에 맞게 조정
@@ -512,25 +612,57 @@ class _CustomBoardState extends State<CustomBoard> {
       return Offset(center.dx + rotatedX, center.dy + rotatedY);
     }
 
-    final topLeft = rotatePoint(image.position, Offset(centerX, centerY), image.rotationAngle);
-    final topCenter = rotatePoint(Offset(image.position.dx + image.width / 2, image.position.dy), Offset(centerX, centerY), image.rotationAngle);
-    final topRight = rotatePoint(Offset(image.position.dx + image.width, image.position.dy), Offset(centerX, centerY), image.rotationAngle);
-    final centerLeft = rotatePoint(Offset(image.position.dx, image.position.dy + image.height / 2), Offset(centerX, centerY), image.rotationAngle);
-    final centerRight = rotatePoint(Offset(image.position.dx + image.width, image.position.dy + image.height / 2), Offset(centerX, centerY), image.rotationAngle);
-    final bottomLeft = rotatePoint(Offset(image.position.dx, image.position.dy + image.height), Offset(centerX, centerY), image.rotationAngle);
-    final bottomCenter = rotatePoint(Offset(image.position.dx + image.width / 2, image.position.dy + image.height), Offset(centerX, centerY), image.rotationAngle);
-    final bottomRight = rotatePoint(Offset(image.position.dx + image.width, image.position.dy + image.height), Offset(centerX, centerY), image.rotationAngle);
+    final topLeft =
+        rotatePoint(image.position, Offset(centerX, centerY), image.rotationAngle);
+    final topCenter = rotatePoint(
+        Offset(image.position.dx + image.width / 2, image.position.dy),
+        Offset(centerX, centerY),
+        image.rotationAngle);
+    final topRight = rotatePoint(
+        Offset(image.position.dx + image.width, image.position.dy),
+        Offset(centerX, centerY),
+        image.rotationAngle);
+    final centerLeft = rotatePoint(
+        Offset(image.position.dx, image.position.dy + image.height / 2),
+        Offset(centerX, centerY),
+        image.rotationAngle);
+    final centerRight = rotatePoint(
+        Offset(image.position.dx + image.width,
+            image.position.dy + image.height / 2),
+        Offset(centerX, centerY),
+        image.rotationAngle);
+    final bottomLeft = rotatePoint(
+        Offset(image.position.dx, image.position.dy + image.height),
+        Offset(centerX, centerY),
+        image.rotationAngle);
+    final bottomCenter = rotatePoint(
+        Offset(image.position.dx + image.width / 2,
+            image.position.dy + image.height),
+        Offset(centerX, centerY),
+        image.rotationAngle);
+    final bottomRight = rotatePoint(
+        Offset(image.position.dx + image.width,
+            image.position.dy + image.height),
+        Offset(centerX, centerY),
+        image.rotationAngle);
 
     return Stack(
       children: [
         _buildResizeHandle(topLeft.dx - halfSize, topLeft.dy - halfSize, 'topLeft'),
-        _buildResizeHandle(topCenter.dx - halfSize, topCenter.dy - halfSize, 'topCenter'),
-        _buildResizeHandle(topRight.dx - halfSize, topRight.dy - halfSize, 'topRight'),
-        _buildResizeHandle(centerLeft.dx - halfSize, centerLeft.dy - halfSize, 'centerLeft'),
-        _buildResizeHandle(centerRight.dx - halfSize, centerRight.dy - halfSize, 'centerRight'),
-        _buildResizeHandle(bottomLeft.dx - halfSize, bottomLeft.dy - halfSize, 'bottomLeft'),
-        _buildResizeHandle(bottomCenter.dx - halfSize, bottomCenter.dy - halfSize, 'bottomCenter'),
-        _buildResizeHandle(bottomRight.dx - halfSize, bottomRight.dy - halfSize, 'bottomRight'),
+        _buildResizeHandle(
+            topCenter.dx - halfSize, topCenter.dy - halfSize, 'topCenter'),
+        _buildResizeHandle(
+            topRight.dx - halfSize, topRight.dy - halfSize, 'topRight'),
+        _buildResizeHandle(
+            centerLeft.dx - halfSize, centerLeft.dy - halfSize, 'centerLeft'),
+        _buildResizeHandle(
+            centerRight.dx - halfSize, centerRight.dy - halfSize, 'centerRight'),
+        _buildResizeHandle(
+            bottomLeft.dx - halfSize, bottomLeft.dy - halfSize, 'bottomLeft'),
+        _buildResizeHandle(
+            bottomCenter.dx - halfSize, bottomCenter.dy - halfSize, 'bottomCenter'),
+        _buildResizeHandle(
+            bottomRight.dx - halfSize, bottomRight.dy - halfSize, 'bottomRight'),
       ],
     );
   }
@@ -565,19 +697,19 @@ class _CustomBoardState extends State<CustomBoard> {
   SystemMouseCursor getCursorForHandle(String type) {
     switch (type) {
       case 'topLeft':
-        return SystemMouseCursors.resizeUpLeftDownRight;
+        return SystemMouseCursors.grab;
       case 'bottomRight':
-        return SystemMouseCursors.resizeUpLeftDownRight;
+        return SystemMouseCursors.grab;
       case 'topRight':
-        return SystemMouseCursors.resizeUpRightDownLeft;
+        return SystemMouseCursors.grab;
       case 'bottomLeft':
-        return SystemMouseCursors.resizeUpRightDownLeft;
+        return SystemMouseCursors.grab;
       case 'topCenter':
       case 'bottomCenter':
-        return SystemMouseCursors.resizeUpDown;
+        return SystemMouseCursors.grab;
       case 'centerLeft':
       case 'centerRight':
-        return SystemMouseCursors.resizeLeftRight;
+        return SystemMouseCursors.grab;
       default:
         return SystemMouseCursors.basic;
     }
@@ -590,8 +722,12 @@ class _CustomBoardState extends State<CustomBoard> {
     final rotationIconRadius = image.height / 2 + 50;
 
     return Positioned(
-      left: centerX + rotationIconRadius * cos(image.rotationAngle - pi / 2) - iconSize / 2,
-      top: centerY + rotationIconRadius * sin(image.rotationAngle - pi / 2) - iconSize / 2,
+      left: centerX +
+          rotationIconRadius * cos(image.rotationAngle - pi / 2) -
+          iconSize / 2,
+      top: centerY +
+          rotationIconRadius * sin(image.rotationAngle - pi / 2) -
+          iconSize / 2,
       child: GestureDetector(
         onPanStart: (details) => _startRotation(_selectedImageIndex!, details),
         onPanUpdate: (details) => _updateRotation(_selectedImageIndex!, details),

@@ -1,7 +1,9 @@
-// main.dart
+//main.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'Right_Panel.dart';
-import 'Left_Panel.dart'; // leftPanel.dart import
+import 'Left_Panel.dart';
+import 'EditorState.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +14,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('AI Short from Video')),
-        body: const EditorScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => EditorState(),
+      child: MaterialApp(
+        home: Scaffold(
+          appBar: AppBar(title: const Text('AI Short from Video')),
+          body: const EditorScreen(),
+        ),
       ),
     );
   }
@@ -32,7 +37,7 @@ class EditorScreen extends StatelessWidget {
           flex: 1,
           child: Container(
             color: Colors.grey[200],
-            child: const LeftPanel(), // leftPanel.dart의 LeftPanel 위젯 사용
+            child: const LeftPanel(),
           ),
         ),
         Expanded(

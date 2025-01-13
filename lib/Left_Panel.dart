@@ -1,11 +1,13 @@
-// Left_panel.dart
+//Left_Panel.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'Editable_Image.dart'; // Import the new file
+import 'Editable_Image.dart';
+import 'EditorState.dart';
 
 class LeftPanel extends StatefulWidget {
   const LeftPanel({super.key});
@@ -30,7 +32,26 @@ class _LeftPanelState extends State<LeftPanel> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
-                child: const CustomBoard(),
+                child: Consumer<EditorState>(
+                  builder: (context, editorState, child) {
+                    
+                    List<Widget> customBoards = editorState.customBoardKeys.entries
+                        .map((entry) => CustomBoard(key: entry.value))
+                        .toList();
+
+                
+                    List<Widget> allWidgets = [
+                      const Center(child: Text("Select a Test Widget")),
+                      ...customBoards,
+                    ];
+
+                    
+                    return IndexedStack(
+                      index: editorState.indexedStackIndex,
+                      children: allWidgets,
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -89,7 +110,8 @@ class _ImageGalleryState extends State<ImageGallery> {
         ),
       );
       final uiImage = await completer.future;
-      _imageSizes[path] = Size(uiImage.width.toDouble(), uiImage.height.toDouble());
+      _imageSizes[path] =
+          Size(uiImage.width.toDouble(), uiImage.height.toDouble());
     }
 
     setState(() {
@@ -114,8 +136,10 @@ class _ImageGalleryState extends State<ImageGallery> {
         itemCount: _imagePaths.length,
         itemBuilder: (context, index) {
           final imagePath = _imagePaths[index];
-          final originalSize = _imageSizes[imagePath] ?? const Size(1, 1); // Provide a default size
-          final feedbackHeight = 100 * (originalSize.height / originalSize.width);
+          final originalSize =
+              _imageSizes[imagePath] ?? const Size(1, 1); // Provide a default size
+          final feedbackHeight =
+              100 * (originalSize.height / originalSize.width);
 
           return Draggable(
             data: imagePath,
