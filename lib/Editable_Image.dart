@@ -101,6 +101,13 @@ class CustomBoardState extends State<CustomBoard> {
         _selectedImageIndex = index;
         _showHandlers = true;
       }
+
+      // 클릭된 이미지를 리스트의 맨 뒤로 이동
+      if (_selectedImageIndex != null) {
+        final selectedImage = _placedImages.removeAt(_selectedImageIndex!);
+        _placedImages.add(selectedImage);
+        _selectedImageIndex = _placedImages.length - 1; // 선택된 인덱스 업데이트
+      }
     });
   }
 
@@ -110,10 +117,10 @@ class CustomBoardState extends State<CustomBoard> {
       _showHandlers = true;
     });
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final Offset localPosition = renderBox.globalToLocal(details.globalPosition);
+    final Offset localPosition =
+        renderBox.globalToLocal(details.globalPosition);
     _rotationCenter = _placedImages[index].position +
-        Offset(_placedImages[index].width / 2,
-            _placedImages[index].height / 2);
+        Offset(_placedImages[index].width / 2, _placedImages[index].height / 2);
     _startRotationAngle = atan2(localPosition.dy - _rotationCenter!.dy,
         localPosition.dx - _rotationCenter!.dx);
   }
@@ -121,7 +128,8 @@ class CustomBoardState extends State<CustomBoard> {
   void _updateRotation(int index, DragUpdateDetails details) {
     if (_rotationCenter != null) {
       final RenderBox renderBox = context.findRenderObject() as RenderBox;
-      final Offset localPosition = renderBox.globalToLocal(details.globalPosition);
+      final Offset localPosition =
+          renderBox.globalToLocal(details.globalPosition);
       final currentRotationAngle = atan2(localPosition.dy - _rotationCenter!.dy,
           localPosition.dx - _rotationCenter!.dx);
       final angleDifference = currentRotationAngle - _startRotationAngle!;
@@ -143,7 +151,8 @@ class CustomBoardState extends State<CustomBoard> {
   void _handleResizeUpdate(int index, DragUpdateDetails details, String type) {
     if (_selectedImageIndex == index) {
       final RenderBox renderBox = context.findRenderObject() as RenderBox;
-      final Offset localPosition = renderBox.globalToLocal(details.globalPosition);
+      final Offset localPosition =
+          renderBox.globalToLocal(details.globalPosition);
       final PlacedImage image = _placedImages[index];
 
       // Convert local position to image's local coordinate system
@@ -161,10 +170,7 @@ class CustomBoardState extends State<CustomBoard> {
 
       // Limit the rotated local position to the opposite side of the fixed point
       rotatedImageLocalPosition = _limitPositionToOppositeSide(
-          rotatedImageLocalPosition,
-          fixedPoint,
-          image.width,
-          image.height);
+          rotatedImageLocalPosition, fixedPoint, image.width, image.height);
 
       // Calculate new dimensions based on the rotated local position and fixed point
       double newWidth = image.width;
@@ -434,16 +440,17 @@ class CustomBoardState extends State<CustomBoard> {
                         child: Transform.rotate(
                           angle: placedImage.rotationAngle,
                           child: GestureDetector(
-                            onTap: () => _selectImage(index),
+                            onTap: () {
+                              _selectImage(index); // _selectImage 호출 시 index 전달
+                            },
                             onPanStart: (details) =>
                                 _startDragging(index, details.globalPosition),
                             onPanUpdate: (details) {
                               if (_draggingIndex == index) {
                                 final RenderBox renderBox =
                                     context.findRenderObject() as RenderBox;
-                                final Offset localPosition =
-                                    renderBox.globalToLocal(
-                                        details.globalPosition);
+                                final Offset localPosition = renderBox
+                                    .globalToLocal(details.globalPosition);
                                 _updateImagePosition(index, localPosition);
                               }
                             },
@@ -468,8 +475,7 @@ class CustomBoardState extends State<CustomBoard> {
                     if (_selectedImageIndex != null && _showHandlers)
                       _buildImageHandlers(_placedImages[_selectedImageIndex!]),
                     if (_selectedImageIndex != null && _showHandlers)
-                      _buildControlButtons(
-                          _placedImages[_selectedImageIndex!],
+                      _buildControlButtons(_placedImages[_selectedImageIndex!],
                           _selectedImageIndex!),
                     if (_selectedImageIndex != null && _showHandlers)
                       _buildRotationIcon(_placedImages[_selectedImageIndex!]),
@@ -505,7 +511,8 @@ class CustomBoardState extends State<CustomBoard> {
               right: 10,
               child: IgnorePointer(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.8),
                     border: Border.all(color: Colors.grey),
@@ -612,8 +619,8 @@ class CustomBoardState extends State<CustomBoard> {
       return Offset(center.dx + rotatedX, center.dy + rotatedY);
     }
 
-    final topLeft =
-        rotatePoint(image.position, Offset(centerX, centerY), image.rotationAngle);
+    final topLeft = rotatePoint(
+        image.position, Offset(centerX, centerY), image.rotationAngle);
     final topCenter = rotatePoint(
         Offset(image.position.dx + image.width / 2, image.position.dy),
         Offset(centerX, centerY),
@@ -641,28 +648,29 @@ class CustomBoardState extends State<CustomBoard> {
         Offset(centerX, centerY),
         image.rotationAngle);
     final bottomRight = rotatePoint(
-        Offset(image.position.dx + image.width,
-            image.position.dy + image.height),
+        Offset(
+            image.position.dx + image.width, image.position.dy + image.height),
         Offset(centerX, centerY),
         image.rotationAngle);
 
     return Stack(
       children: [
-        _buildResizeHandle(topLeft.dx - halfSize, topLeft.dy - halfSize, 'topLeft'),
+        _buildResizeHandle(
+            topLeft.dx - halfSize, topLeft.dy - halfSize, 'topLeft'),
         _buildResizeHandle(
             topCenter.dx - halfSize, topCenter.dy - halfSize, 'topCenter'),
         _buildResizeHandle(
             topRight.dx - halfSize, topRight.dy - halfSize, 'topRight'),
         _buildResizeHandle(
             centerLeft.dx - halfSize, centerLeft.dy - halfSize, 'centerLeft'),
-        _buildResizeHandle(
-            centerRight.dx - halfSize, centerRight.dy - halfSize, 'centerRight'),
+        _buildResizeHandle(centerRight.dx - halfSize, centerRight.dy - halfSize,
+            'centerRight'),
         _buildResizeHandle(
             bottomLeft.dx - halfSize, bottomLeft.dy - halfSize, 'bottomLeft'),
-        _buildResizeHandle(
-            bottomCenter.dx - halfSize, bottomCenter.dy - halfSize, 'bottomCenter'),
-        _buildResizeHandle(
-            bottomRight.dx - halfSize, bottomRight.dy - halfSize, 'bottomRight'),
+        _buildResizeHandle(bottomCenter.dx - halfSize,
+            bottomCenter.dy - halfSize, 'bottomCenter'),
+        _buildResizeHandle(bottomRight.dx - halfSize, bottomRight.dy - halfSize,
+            'bottomRight'),
       ],
     );
   }
@@ -730,7 +738,8 @@ class CustomBoardState extends State<CustomBoard> {
           iconSize / 2,
       child: GestureDetector(
         onPanStart: (details) => _startRotation(_selectedImageIndex!, details),
-        onPanUpdate: (details) => _updateRotation(_selectedImageIndex!, details),
+        onPanUpdate: (details) =>
+            _updateRotation(_selectedImageIndex!, details),
         child: Icon(Icons.rotate_right, size: iconSize, color: Colors.black87),
       ),
     );
