@@ -1,4 +1,4 @@
-import 'package:ai_short_form_video_web/layouts/home.dart';
+import 'package:ai_short_form_video_web/pages/home.dart';
 import 'package:flutter/material.dart';
 
 void main() {
