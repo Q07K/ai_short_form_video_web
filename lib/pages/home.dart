@@ -1,5 +1,5 @@
 import 'package:ai_short_form_video_web/styles/fonts.dart';
-import 'package:ai_short_form_video_web/layouts/test.dart';
+import 'package:ai_short_form_video_web/pages/test.dart';
 import 'package:ai_short_form_video_web/widgets/home_logo.dart';
 import 'package:ai_short_form_video_web/widgets/middle_button.dart';
 import 'package:flutter/material.dart';
