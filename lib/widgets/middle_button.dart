@@ -1,5 +1,5 @@
-import 'package:ai_short_form_video_web/assets/colors.dart';
-import 'package:ai_short_form_video_web/assets/fonts.dart';
+import 'package:ai_short_form_video_web/styles/colors.dart';
+import 'package:ai_short_form_video_web/styles/fonts.dart';
 import 'package:flutter/material.dart';
 
 class MiddleButton extends StatelessWidget {

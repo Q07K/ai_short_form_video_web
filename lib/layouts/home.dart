@@ -1,3 +1,4 @@
+import 'package:ai_short_form_video_web/styles/fonts.dart';
 import 'package:ai_short_form_video_web/layouts/test.dart';
 import 'package:ai_short_form_video_web/widgets/home_logo.dart';
 import 'package:ai_short_form_video_web/widgets/middle_button.dart';
@@ -21,14 +22,39 @@ class _Home extends State<Home> {
         child: Row(
           children: <Widget>[
             const HomeLogo(),
-            MiddleButton(
-                text: "text",
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SecondPage()));
-                })
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "생성형 AI를 사용하여 나만의 동영상을 제작하고\n모든 소셜 미디어 플랫폼에 공유해보세요.",
+                  style: AppFonts.h1,
+                  textAlign: TextAlign.center,
+                ),
+                const Padding(padding: EdgeInsets.only(top: 30, bottom: 30)),
+                Row(
+                  children: [
+                    MiddleButton(
+                        text: "test1",
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const SecondPage()));
+                        }),
+                    const Padding(
+                        padding: EdgeInsets.only(left: 10, right: 10)),
+                    MiddleButton(
+                        text: "test2",
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const SecondPage()));
+                        }),
+                  ],
+                )
+              ],
+            ),
           ],
         ),
       ),
