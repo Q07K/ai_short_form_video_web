@@ -52,7 +52,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -62,7 +61,8 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
-
+  assets:
+    - assets/fonts/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
@@ -74,7 +74,27 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
+  fonts:
+    - family: Freesentation
+      fonts:
+        - asset: assets/fonts/Freesentation-1Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Freesentation-2ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Freesentation-3Light.ttf
+          weight: 300
+        - asset: assets/fonts/Freesentation-4Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Freesentation-5Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Freesentation-6SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Freesentation-7Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Freesentation-8ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Freesentation-9Black.ttf
+          weight: 900
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf
