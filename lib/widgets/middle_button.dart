@@ -5,27 +5,29 @@ import 'package:flutter/material.dart';
 class MiddleButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
+  final Color textColor;
 
   const MiddleButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
-  }) : super(key: key);
+    required this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final ButtonStyle style = ElevatedButton.styleFrom(
-      textStyle: AppFonts.button1,
-      fixedSize: const Size(160, 60),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(
-          color: AppColors.black1,
-          width: 2,
+        textStyle: AppFonts.button1,
+        fixedSize: const Size(160, 60),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(
+            color: AppColors.black1,
+            width: 2,
+          ),
         ),
-      ),
-      backgroundColor: AppColors.white,
-    );
+        backgroundColor: AppColors.white,
+        foregroundColor: textColor);
     return ElevatedButton(
       onPressed: onPressed,
       style: style,
