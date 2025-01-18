@@ -1,43 +1,48 @@
 import 'package:flutter/material.dart';
 
 class HomeLogo extends StatelessWidget {
-  const HomeLogo({Key? key}) : super(key: key);
+  const HomeLogo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 512,
-      height: 512,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            child: Text(
-              "AI",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 412,
-                fontFamily: "Freesentation",
-                fontWeight: FontWeight.w800,
+    return Center(
+      child: SizedBox(
+        width: 512,
+        height: 512,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Transform.translate(
+              offset: const Offset(15, 0),
+              child: const Text(
+                "AI",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 412,
+                  fontFamily: "Freesentation",
+                  fontWeight: FontWeight.w800,
+                  height: 512 / 412,
+                ),
+                overflow: TextOverflow.visible,
               ),
-              overflow: TextOverflow.visible,
             ),
-          ),
-          Positioned(
-            top: 450,
-            left: 65,
-            child: Text(
-              "Short from video",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 48,
-                fontFamily: "Freesentation",
-                fontWeight: FontWeight.w800,
+            const Positioned(
+              top: 400,
+              child: Text(
+                "Short from video",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 48,
+                  fontFamily: "Freesentation",
+                  fontWeight: FontWeight.w800,
+                ),
+                overflow: TextOverflow.visible,
               ),
-              overflow: TextOverflow.visible,
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }
