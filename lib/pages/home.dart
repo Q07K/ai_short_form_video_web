@@ -1,4 +1,4 @@
-import 'package:ai_short_form_video_web/pages/home/Introduction.dart';
+import 'package:ai_short_form_video_web/pages/home/introduction.dart';
 import 'package:ai_short_form_video_web/styles/colors.dart';
 import 'package:ai_short_form_video_web/widgets/home_logo.dart';
 import 'package:flutter/material.dart';
